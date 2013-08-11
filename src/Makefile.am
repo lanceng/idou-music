@@ -1,0 +1,4 @@
+SUBDIRS = \
+	tools \
+	gui \
+	app
