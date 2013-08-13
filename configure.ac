@@ -33,6 +33,7 @@ AC_CONFIG_FILES([Makefile
                  resource/image/Makefile
                  resource/image/button/Makefile
                  resource/image/skin/Makefile
+                 resource/image/icon/Makefile
                  src/Makefile
                  src/tools/Makefile
                  src/app/Makefile

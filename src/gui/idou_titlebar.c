@@ -37,32 +37,21 @@ static void idou_titlebar_init(iDouTitlebar *titlebar)
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	titlebar->label = gtk_label_new (NULL);
 
-	titlebar->min_btn = idou_button_new();
-	gtk_widget_set_size_request(titlebar->min_btn, 25, 18);
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(RESDIR"image/button/min_normal.png", 25, 18, FALSE, NULL);
-	idou_button_set_pixbuf(titlebar->min_btn, pixbuf);
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(RESDIR"image/button/min_hover.png", 25, 18, FALSE, NULL);
-	idou_button_set_hovered_pixbuf(titlebar->min_btn, pixbuf);
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(RESDIR"image/button/min_press.png", 25, 18, FALSE, NULL);
-	idou_button_set_pressed_pixbuf(titlebar->min_btn, pixbuf);
-
-	titlebar->max_btn = idou_button_new();
-	gtk_widget_set_size_request(titlebar->max_btn, 25, 18);
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(RESDIR"image/button/max_normal.png", 25, 18, FALSE, NULL);
-	idou_button_set_pixbuf(titlebar->max_btn, pixbuf);
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(RESDIR"image/button/max_hover.png", 25, 18, FALSE, NULL);
-	idou_button_set_hovered_pixbuf(titlebar->max_btn , pixbuf);
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(RESDIR"image/button/max_press.png", 25, 18, FALSE, NULL);
-	idou_button_set_pressed_pixbuf(titlebar->max_btn , pixbuf);
-
-	titlebar->close_btn = idou_button_new();
-	gtk_widget_set_size_request(titlebar->close_btn, 38, 18);
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(RESDIR"image/button/close_normal.png", 38, 18, FALSE, NULL);
-	idou_button_set_pixbuf(titlebar->close_btn, pixbuf);
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(RESDIR"image/button/close_hover.png", 38, 18, FALSE, NULL);
-	idou_button_set_hovered_pixbuf(titlebar->close_btn, pixbuf);
-	pixbuf = gdk_pixbuf_new_from_file_at_scale(RESDIR"image/button/close_press.png", 38, 18, FALSE, NULL);
-	idou_button_set_pressed_pixbuf(titlebar->close_btn, pixbuf);
+    IDOU_BUTTON_NEW(titlebar->min_btn,
+                    RESDIR"image/button/min_normal.png",
+                    RESDIR"image/button/min_hover.png",
+                    RESDIR"image/button/min_press.png",
+                    25, 18);
+    IDOU_BUTTON_NEW(titlebar->max_btn,
+                    RESDIR"image/button/max_normal.png",
+                    RESDIR"image/button/max_hover.png",
+                    RESDIR"image/button/max_press.png",
+                    25, 18);
+    IDOU_BUTTON_NEW(titlebar->close_btn, 
+                    RESDIR"image/button/close_normal.png", 
+                    RESDIR"image/button/close_press.png", 
+                    RESDIR"image/button/close_press.png", 
+                    38, 18);
 
 	g_signal_connect_swapped(G_OBJECT(titlebar->close_btn), "clicked",
 			 G_CALLBACK(on_close_button_clicked), titlebar);

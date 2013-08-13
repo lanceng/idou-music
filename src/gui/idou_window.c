@@ -44,7 +44,6 @@ void idou_window_init(iDouWindow *self)
     hbox4 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
     GtkWidget *title_bar = idou_titlebar2_new();
-    idou_titlebar_set_label(title_bar, "爱逗音乐");
     gtk_box_pack_start(GTK_BOX(vbox), title_bar, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, FALSE, 2);
@@ -67,21 +66,26 @@ void idou_window_init(iDouWindow *self)
     gtk_box_pack_start(GTK_BOX(hbox4), lyric_toggle, FALSE, FALSE, 0);
 
     GtkWidget *align = gtk_alignment_new(0.3, 0, 0, 0);
-    pixbuf = gdk_pixbuf_new_from_file_at_size(RESDIR"image/button/last.png", 32, 32, NULL);
-    image = gtk_image_new_from_pixbuf(pixbuf);
-    GtkWidget *last_btn = gtk_button_new();
-    gtk_button_set_image(last_btn, image);
-
-    pixbuf = gdk_pixbuf_new_from_file_at_size(RESDIR"image/button/play.png", 32, 32, NULL);
-    image = gtk_image_new_from_pixbuf(pixbuf);
-    GtkWidget *play_btn = gtk_button_new();
-    gtk_button_set_image(play_btn, image);
+    GtkWidget *last_btn = idou_button_new();
+    IDOU_BUTTON_NEW(last_btn,
+                    RESDIR"image/button/last_normal.png",
+                    RESDIR"image/button/last_hover.png",
+                    RESDIR"image/button/last_press.png",
+                    32, 32);
+    GtkWidget *play_btn = idou_button_new();
+    IDOU_BUTTON_NEW(play_btn,
+                    RESDIR"image/button/play_normal.png",
+                    RESDIR"image/button/play_hover.png",
+                    RESDIR"image/button/play_press.png",
+                    32, 32);
+    GtkWidget *next_btn = idou_button_new();
+    IDOU_BUTTON_NEW(next_btn,
+                    RESDIR"image/button/next_normal.png",
+                    RESDIR"image/button/next_hover.png",
+                    RESDIR"image/button/next_press.png",
+                    32, 32);
+    
     g_signal_connect(G_OBJECT(play_btn), "clicked", G_CALLBACK(on_play_event), (gpointer)self);
-
-    pixbuf = gdk_pixbuf_new_from_file_at_size(RESDIR"image/button/next.png", 32, 32, NULL);
-    image = gtk_image_new_from_pixbuf(pixbuf);
-    GtkWidget *next_btn = gtk_button_new();
-    gtk_button_set_image(next_btn, image);
 
     gtk_box_pack_start(GTK_BOX(hbox2), last_btn, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(hbox2), play_btn, FALSE, FALSE, 0);

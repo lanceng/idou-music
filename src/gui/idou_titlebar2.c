@@ -18,17 +18,18 @@ static void idou_titlebar2_init(iDouTitlebar2 *self)
     GList *list = gtk_container_get_children(GTK_CONTAINER(self));
     GtkWidget *hbox = GTK_WIDGET(list->data);
 
-    self->skin_btn = idou_button_new();
-    gtk_widget_set_size_request(self->skin_btn, 25, 18);
-    GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_size(RESDIR"image/button/theme_normal.png", 25, 18, NULL);
-    idou_button_set_normal_pixbuf(self->skin_btn, pixbuf);
-
-    pixbuf = gdk_pixbuf_new_from_file_at_size(RESDIR"image/button/theme_hover.png", 25, 18, NULL);
-    idou_button_set_hovered_pixbuf(self->skin_btn, pixbuf);
-
-    pixbuf = gdk_pixbuf_new_from_file_at_size(RESDIR"image/button/theme_press.png", 25, 18, NULL);
-    idou_button_set_pressed_pixbuf(self->skin_btn, pixbuf);
-
+    GtkWidget *icon_btn;
+    IDOU_BUTTON_NEW(icon_btn,
+                    RESDIR"image/icon/icon.png",
+                    NULL, 
+                    NULL, 
+                    60, 30);
+    IDOU_BUTTON_NEW(self->skin_btn,
+                    RESDIR"image/button/theme_normal.png",
+                    RESDIR"image/button/theme_hover.png",
+                    RESDIR"image/button/theme_press.png",
+                    25, 18);
+    gtk_box_pack_start(GTK_BOX(hbox), icon_btn, FALSE, FALSE, 2);
     gtk_box_pack_end(GTK_BOX(hbox), self->skin_btn, FALSE, FALSE, 0);
 
     g_signal_connect(G_OBJECT(self->skin_btn), "clicked", G_CALLBACK(on_skin_button_clicked), NULL);
