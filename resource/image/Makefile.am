@@ -1,2 +1,2 @@
-SUBDIRS = button skin icon
+SUBDIRS = button skin icon playmode combobox
 imagedir = $(pkgdatadir)/resource/image

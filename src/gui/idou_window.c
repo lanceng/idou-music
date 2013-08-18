@@ -4,18 +4,16 @@
 #include "idou_titlebar2.h"
 #include "idou_window.h"
 #include "idou_button.h"
+#include "idou_music_manager.h"
 #include "gstplay.h"
 
 G_DEFINE_TYPE(iDouWindow, idou_window, GTK_TYPE_WINDOW);
 
-
-static GtkWidget *idou_music_view_new();
 static gpointer on_draw(GtkWidget *widget, gpointer data);
-static void on_row_activated(GtkTreeView *treeview, GtkTreePath *path, 
-        GtkTreeViewColumn *column, gpointer data);
 static void on_play_event(GtkWidget *widget, gpointer data);
 static void on_time_scale_change_value(GtkWidget *widget, gpointer data);
 static gboolean timer_cb(gpointer data);
+static void draw_rounded_rectangle(cairo_t *cr, gint width, gint height, gint r);
 
 void idou_window_class_init(iDouWindowClass *klass)
 {
@@ -24,7 +22,7 @@ void idou_window_class_init(iDouWindowClass *klass)
 void idou_window_init(iDouWindow *self)
 {
     GtkWidget *window;
-    GtkWidget *hbox, *hbox2, *hbox3, *hbox4;
+    GtkWidget *hbox, *hbox2, *hbox3, *hbox4, *hbox5;
     GtkWidget *vbox, *vbox2, *vbox3;
     GtkWidget *image;
     GdkPixbuf *pixbuf;
@@ -42,6 +40,7 @@ void idou_window_init(iDouWindow *self)
     vbox3 = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
     hbox3 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
     hbox4 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
+    hbox5 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
     GtkWidget *title_bar = idou_titlebar2_new();
     gtk_box_pack_start(GTK_BOX(vbox), title_bar, FALSE, FALSE, 0);
@@ -67,19 +66,19 @@ void idou_window_init(iDouWindow *self)
 
     GtkWidget *align = gtk_alignment_new(0.3, 0, 0, 0);
     GtkWidget *last_btn = idou_button_new();
-    IDOU_BUTTON_NEW(last_btn,
+    IDOU_BUTTON_SET(last_btn,
                     RESDIR"image/button/last_normal.png",
                     RESDIR"image/button/last_hover.png",
                     RESDIR"image/button/last_press.png",
                     32, 32);
     GtkWidget *play_btn = idou_button_new();
-    IDOU_BUTTON_NEW(play_btn,
+    IDOU_BUTTON_SET(play_btn,
                     RESDIR"image/button/play_normal.png",
                     RESDIR"image/button/play_hover.png",
                     RESDIR"image/button/play_press.png",
                     32, 32);
     GtkWidget *next_btn = idou_button_new();
-    IDOU_BUTTON_NEW(next_btn,
+    IDOU_BUTTON_SET(next_btn,
                     RESDIR"image/button/next_normal.png",
                     RESDIR"image/button/next_hover.png",
                     RESDIR"image/button/next_press.png",
@@ -103,19 +102,39 @@ void idou_window_init(iDouWindow *self)
     gtk_box_pack_start(GTK_BOX(vbox3), hbox4, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox2), vbox3, FALSE, FALSE, 3);
 
-    GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
-    GtkWidget *music_view = idou_music_view_new();
-    gtk_container_add(GTK_CONTAINER(scrolled), music_view);
+    GtkWidget *music_manager = idou_music_manager_new();
+    gtk_box_pack_start(GTK_BOX(vbox2), music_manager, TRUE, TRUE, 2);
 
-    GtkWidget *notebook = gtk_notebook_new();
-    GtkWidget *label = gtk_label_new("播放列表");
-    gtk_widget_set_size_request(label, 150, -1);
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), scrolled, label);
+    GtkWidget *order_btn = gtk_button_new();
+    IDOU_BUTTON_SET(order_btn,
+                    RESDIR"image/playmode/order_normal.png",
+                    RESDIR"image/playmode/order_hover.png",
+                    RESDIR"image/playmode/order_press.png",
+                    18, 14);
+    GtkWidget *loop_btn = gtk_button_new();
+    IDOU_BUTTON_SET(loop_btn,
+                    RESDIR"image/playmode/loop_normal.png",
+                    RESDIR"image/playmode/loop_hover.png",
+                    RESDIR"image/playmode/loop_press.png",
+                    18, 14);
+    GtkWidget *random_btn = gtk_button_new();
+    IDOU_BUTTON_SET(random_btn,
+                    RESDIR"image/playmode/random_normal.png",
+                    RESDIR"image/playmode/random_hover.png",
+                    RESDIR"image/playmode/random_press.png",
+                    18, 14);
+    GtkWidget *single_btn = gtk_button_new();
+    IDOU_BUTTON_SET(single_btn,
+                    RESDIR"image/playmode/single_normal.png",
+                    RESDIR"image/playmode/single_hover.png",
+                    RESDIR"image/playmode/single_press.png",
+                    18, 14);
 
-    label = gtk_label_new("音乐电台");
-    scrolled = gtk_scrolled_window_new(NULL, NULL);
-    gtk_notebook_append_page(GTK_NOTEBOOK(notebook), scrolled, label);
-    gtk_box_pack_start(GTK_BOX(vbox2), notebook, TRUE, TRUE, 2);
+    gtk_box_pack_start(GTK_BOX(hbox5), order_btn, TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox5), loop_btn, TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox5), random_btn, TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(hbox5), single_btn, TRUE, FALSE, 0);
+    gtk_box_pack_start(GTK_BOX(vbox2), hbox5, FALSE, FALSE, 3);
 
     gtk_container_add(GTK_CONTAINER(window), vbox);
 
@@ -149,17 +168,38 @@ void idou_window_show(iDouWindow *window)
 
 static gpointer on_draw(GtkWidget *widget, gpointer data)
 {
+    cairo_t *cr;
     GtkAllocation alloc;
     gtk_widget_get_allocation(widget, &alloc);
     gint width = alloc.width;
     gint height = alloc.height;
     gint r = 5;
 
+    cr = gdk_cairo_create(gtk_widget_get_window(widget));
     cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32,
                                                           width,
                                                           height);
-    cairo_t *cr = cairo_create(surface);
+    cairo_t *cr2 = cairo_create(surface);
+    draw_rounded_rectangle(cr2, width, height, r);
+    cairo_stroke_preserve(cr2);
+    cairo_fill(cr2) ;
+    cairo_destroy(cr2);
 
+    cairo_region_t *region = gdk_cairo_region_create_from_surface(surface);
+    gtk_widget_shape_combine_region(widget, region);
+
+    cairo_set_line_width(cr, 0.3);
+    cairo_set_source_rgb(cr, 0.78, 0.78, 0.78);
+    draw_rounded_rectangle(cr, width, height, r);
+    cairo_stroke(cr);
+
+    cairo_region_destroy(region);
+    cairo_surface_destroy(surface);
+    cairo_destroy(cr);
+}
+
+static void draw_rounded_rectangle(cairo_t *cr, gint width, gint height, gint r)
+{
     cairo_move_to(cr, r, 0);
     cairo_line_to(cr, width-r, 0);
 
@@ -176,54 +216,6 @@ static gpointer on_draw(GtkWidget *widget, gpointer data)
 	cairo_arc(cr, width-r, r, r, 3 * G_PI /2.0, 2 * G_PI);
 	cairo_arc(cr, width-r, height-r, r, 0, G_PI / 2);
 	cairo_arc(cr, r, height-r, r, G_PI / 2, G_PI);
-
-    cairo_stroke_preserve(cr);
-    cairo_fill(cr) ;
-
-    cairo_region_t *region = gdk_cairo_region_create_from_surface(surface);
-    gtk_widget_shape_combine_region(widget, region);
-}
-
-static GtkWidget *idou_music_view_new()
-{
-    GtkTreeStore *tree_store = gtk_tree_store_new(3, G_TYPE_STRING, G_TYPE_STRING, G_TYPE_STRING);
-    GtkTreeIter iter;
-    gtk_tree_store_append(tree_store, &iter, NULL);
-    gtk_tree_store_set(tree_store, &iter, 0, "亏欠一生", 1, "裘海正", 2, "3:00", -1);
-
-    GtkWidget *tree_view = gtk_tree_view_new();
-
-    GtkTreeViewColumn *column = gtk_tree_view_column_new();
-    gtk_tree_view_column_set_title(GTK_TREE_VIEW_COLUMN(column), "歌曲");
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
-    GtkCellRenderer *renderer = gtk_cell_renderer_text_new();
-    gtk_tree_view_column_pack_start(column, renderer, FALSE);
-    gtk_tree_view_column_add_attribute(column, renderer, "text", 0);
-
-    column = gtk_tree_view_column_new();
-    gtk_tree_view_column_set_title(GTK_TREE_VIEW_COLUMN(column), "歌手");
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
-    renderer = gtk_cell_renderer_text_new();
-    gtk_tree_view_column_pack_start(column, renderer, FALSE);
-    gtk_tree_view_column_add_attribute(column, renderer, "text", 1);
-
-    column = gtk_tree_view_column_new();
-    gtk_tree_view_column_set_title(GTK_TREE_VIEW_COLUMN(column), "时长");
-    gtk_tree_view_append_column(GTK_TREE_VIEW(tree_view), column);
-    renderer = gtk_cell_renderer_text_new();
-    gtk_tree_view_column_pack_start(column, renderer, FALSE);
-    gtk_tree_view_column_add_attribute(column, renderer, "text", 2);
-
-    gtk_tree_view_set_model(GTK_TREE_VIEW(tree_view), tree_store);
-
-    g_signal_connect(G_OBJECT(tree_view), "row-activated", G_CALLBACK(on_row_activated), NULL);
-
-    return tree_view;
-}
-
-static void on_row_activated(GtkTreeView *treeview, GtkTreePath *path, GtkTreeViewColumn *column, gpointer data)
-{
-
 }
 
 static void on_play_event(GtkWidget *widget, gpointer data)

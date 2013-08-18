@@ -19,12 +19,12 @@ static void idou_titlebar2_init(iDouTitlebar2 *self)
     GtkWidget *hbox = GTK_WIDGET(list->data);
 
     GtkWidget *icon_btn;
-    IDOU_BUTTON_NEW(icon_btn,
+    IDOU_BUTTON_SET(icon_btn,
                     RESDIR"image/icon/icon.png",
                     NULL, 
                     NULL, 
-                    60, 30);
-    IDOU_BUTTON_NEW(self->skin_btn,
+                    65, 30);
+    IDOU_BUTTON_SET(self->skin_btn,
                     RESDIR"image/button/theme_normal.png",
                     RESDIR"image/button/theme_hover.png",
                     RESDIR"image/button/theme_press.png",

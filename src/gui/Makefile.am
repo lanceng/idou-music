@@ -19,5 +19,7 @@ libgui_la_SOURCES = \
 		idou_titlebar.c \
 		idou_titlebar2.c \
 		idou_theme_dialog.c \
+		idou_combobox.c \
+		idou_music_manager.c \
 		idou_window.c \
 		$(NULL)

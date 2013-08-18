@@ -10,7 +10,7 @@
 #define IDOU_IS_BUTTON_CLASS(class)     (G_TYPE_CHECK_CLASS_TYPE((class), IDOU_TYPE_BUTTON))
 #define IDOU_BUTTON_GET_CLASS(obj)	(G_TYPE_INSTANCE_GET_CLASS((obj), IDOU_TYPE_BUTTON, iDouButtonClass))
 
-#define IDOU_BUTTON_NEW(btn, path1, path2, path3, width, height)   { \
+#define IDOU_BUTTON_SET(btn, path1, path2, path3, width, height)   { \
         btn = idou_button_new(); \
         gtk_widget_set_size_request(btn, width, height); \
         GdkPixbuf *pixbuf = gdk_pixbuf_new_from_file_at_scale(path1, width, height, FALSE, NULL); \

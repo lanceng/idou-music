@@ -64,7 +64,8 @@ CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libgui_la_LIBADD =
 am_libgui_la_OBJECTS = idou_button.lo idou_titlebar.lo \
-	idou_titlebar2.lo idou_theme_dialog.lo idou_window.lo
+	idou_titlebar2.lo idou_theme_dialog.lo idou_combobox.lo \
+	idou_music_manager.lo idou_window.lo
 libgui_la_OBJECTS = $(am_libgui_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -234,6 +235,8 @@ libgui_la_SOURCES = \
 		idou_titlebar.c \
 		idou_titlebar2.c \
 		idou_theme_dialog.c \
+		idou_combobox.c \
+		idou_music_manager.c \
 		idou_window.c \
 		$(NULL)
 
@@ -290,6 +293,8 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idou_button.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idou_combobox.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idou_music_manager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idou_theme_dialog.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idou_titlebar.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idou_titlebar2.Plo@am__quote@

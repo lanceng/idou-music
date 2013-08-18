@@ -34,6 +34,8 @@ AC_CONFIG_FILES([Makefile
                  resource/image/button/Makefile
                  resource/image/skin/Makefile
                  resource/image/icon/Makefile
+                 resource/image/playmode/Makefile
+                 resource/image/combobox/Makefile
                  src/Makefile
                  src/tools/Makefile
                  src/app/Makefile

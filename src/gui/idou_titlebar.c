@@ -37,17 +37,17 @@ static void idou_titlebar_init(iDouTitlebar *titlebar)
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
 	titlebar->label = gtk_label_new (NULL);
 
-    IDOU_BUTTON_NEW(titlebar->min_btn,
+    IDOU_BUTTON_SET(titlebar->min_btn,
                     RESDIR"image/button/min_normal.png",
                     RESDIR"image/button/min_hover.png",
                     RESDIR"image/button/min_press.png",
                     25, 18);
-    IDOU_BUTTON_NEW(titlebar->max_btn,
+    IDOU_BUTTON_SET(titlebar->max_btn,
                     RESDIR"image/button/max_normal.png",
                     RESDIR"image/button/max_hover.png",
                     RESDIR"image/button/max_press.png",
                     25, 18);
-    IDOU_BUTTON_NEW(titlebar->close_btn, 
+    IDOU_BUTTON_SET(titlebar->close_btn, 
                     RESDIR"image/button/close_normal.png", 
                     RESDIR"image/button/close_press.png", 
                     RESDIR"image/button/close_press.png", 
