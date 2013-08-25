@@ -15,6 +15,9 @@ struct _iDouWindow {
     GtkAdjustment *progress_adjust;
     GtkAdjustment *volume_adjust;
     GtkWidget *time_label;
+    gint shadow_padding;
+    gint shadow_radius;
+    gint frame_radius;
 };
 
 struct _iDouWindowClass {

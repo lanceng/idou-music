@@ -9,11 +9,15 @@
 
 G_DEFINE_TYPE(iDouWindow, idou_window, GTK_TYPE_WINDOW);
 
-static gpointer on_draw(GtkWidget *widget, gpointer data);
+static gboolean on_draw(GtkWidget *widget, gpointer data);
 static void on_play_event(GtkWidget *widget, gpointer data);
 static void on_time_scale_change_value(GtkWidget *widget, gpointer data);
 static gboolean timer_cb(gpointer data);
-static void draw_rounded_rectangle(cairo_t *cr, gint width, gint height, gint r);
+static gboolean on_draw_shadow(GtkWidget *widget, cairo_t *cr, gpointer data);
+static void draw_round_rectangle(cairo_t *cr, gint x, gint y, gint width, gint height, gint r);
+static void draw_radial_round(cairo_t *cr, gint x, gint y, gint r);
+static void draw_hlinear(cairo_t *cr, gint x, gint y, gint w, gint h, gboolean left_to_right);
+static void draw_vlinear(cairo_t *cr, gint x, gint y, gint w, gint h, gboolean top_to_bottom);
 
 void idou_window_class_init(iDouWindowClass *klass)
 {
@@ -26,11 +30,19 @@ void idou_window_init(iDouWindow *self)
     GtkWidget *vbox, *vbox2, *vbox3;
     GtkWidget *image;
     GdkPixbuf *pixbuf;
-    
+ 
     window = GTK_WIDGET(self);
     gtk_window_set_default_size(GTK_WINDOW(window), 720, 580);
     gtk_window_set_decorated(GTK_WINDOW(window), FALSE);
     gtk_widget_set_name(window, "iDouWindow");
+
+    self->shadow_radius = 10;
+    self->frame_radius = 3;
+    self->shadow_padding = self->shadow_radius - self->frame_radius;
+    GtkWidget *window_shadow = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+    gtk_alignment_set_padding(GTK_ALIGNMENT(window_shadow), self->shadow_padding, self->shadow_padding, self->shadow_padding, self->shadow_padding);
+    g_signal_connect(G_OBJECT(window_shadow), "draw", G_CALLBACK(on_draw_shadow), (gpointer)self);
+    
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
@@ -136,13 +148,18 @@ void idou_window_init(iDouWindow *self)
     gtk_box_pack_start(GTK_BOX(hbox5), single_btn, TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox2), hbox5, FALSE, FALSE, 3);
 
-    gtk_container_add(GTK_CONTAINER(window), vbox);
+    GtkWidget *event_box = gtk_event_box_new();
+    gtk_container_add(GTK_CONTAINER(event_box), vbox);
+    gtk_container_add(GTK_CONTAINER(window_shadow), event_box);
+    gtk_container_add(GTK_CONTAINER(window), window_shadow);
 
     g_signal_connect(G_OBJECT(title_bar), "idou-destroy", G_CALLBACK(gtk_main_quit), NULL);
     g_signal_connect_after(G_OBJECT(window), "draw", G_CALLBACK(on_draw), NULL);
 
     GtkCssProvider *provider = gtk_css_provider_new();
     GdkScreen *screen = gdk_screen_get_default();
+    GdkVisual *visual = gdk_screen_get_rgba_visual(screen);
+    gtk_widget_set_visual(window, visual);
 
     const gchar *css_data = "#iDouWindow {"
                             "background-image: url('"
@@ -165,8 +182,8 @@ void idou_window_show(iDouWindow *window)
 {
     gtk_widget_show_all(GTK_WINDOW(window));
 }
-
-static gpointer on_draw(GtkWidget *widget, gpointer data)
+/*
+static gboolean on_draw(GtkWidget *widget, gpointer data)
 {
     cairo_t *cr;
     GtkAllocation alloc;
@@ -197,6 +214,7 @@ static gpointer on_draw(GtkWidget *widget, gpointer data)
     cairo_surface_destroy(surface);
     cairo_destroy(cr);
 }
+*/
 
 static void draw_rounded_rectangle(cairo_t *cr, gint width, gint height, gint r)
 {
@@ -216,6 +234,223 @@ static void draw_rounded_rectangle(cairo_t *cr, gint width, gint height, gint r)
 	cairo_arc(cr, width-r, r, r, 3 * G_PI /2.0, 2 * G_PI);
 	cairo_arc(cr, width-r, height-r, r, 0, G_PI / 2);
 	cairo_arc(cr, r, height-r, r, G_PI / 2, G_PI);
+}
+
+
+
+void draw_window_shadow(cairo_t *cr, gint x, gint y, gint w, gint h, gint r, gint p)
+{
+    cairo_save(cr);
+    cairo_rectangle(cr, x, y, r - 1, r - 1);
+    cairo_rectangle(cr, x + r - 1, y, 1, r - 2);
+    cairo_rectangle(cr, x, y + r - 1, r - 2, 1);
+    
+    cairo_rectangle(cr, x + w - r + 1, y, r - 1, r - 1);
+    cairo_rectangle(cr, x + w - r, y, 1, r - 2);
+    cairo_rectangle(cr, x + w - r + 2, y + r - 1, r - 2, 1);
+    
+    cairo_rectangle(cr, x, y + h - r + 1, r - 1, r - 1);
+    cairo_rectangle(cr, x + r - 1, y + h - r + 2, 1, r - 2);
+    cairo_rectangle(cr, x, y + h - r, r - 2, 1);
+    
+    cairo_rectangle(cr, x + w - r + 1, y + h - r + 1, r - 1, r - 1);
+    cairo_rectangle(cr, x + w - r, y + h - r + 2, 1, r - 2);
+    cairo_rectangle(cr, x + w - r + 2, y + h - r, r - 2, 1);
+    cairo_clip(cr);
+    
+    // Draw four round.
+    draw_radial_round(cr, x + r, y + r, r);
+    draw_radial_round(cr, x + r, y + h - r, r);
+    draw_radial_round(cr, x + w - r, y + r, r);
+    draw_radial_round(cr, x + w - r, y + h - r, r);
+    cairo_restore(cr);
+    
+    cairo_save(cr);
+    // Clip four side.
+    cairo_rectangle(cr, x, y + r, p, h - r * 2);
+    cairo_rectangle(cr, x + w - p, y + r, p, h - r * 2);
+    cairo_rectangle(cr, x + r, y, w - r * 2, p);
+    cairo_rectangle(cr, x + r, y + h - p, w - r * 2, p);
+    cairo_clip(cr);
+    
+    // Draw four side.
+    draw_vlinear(
+        cr, 
+        x + r, y, 
+        w - r * 2, r, TRUE);
+    draw_vlinear(
+        cr, 
+        x + r, y + h - r, 
+        w - r * 2, r, FALSE);
+    draw_hlinear(
+        cr, 
+        x, y + r, 
+        r, h - r * 2, TRUE);
+    draw_hlinear(
+        cr, 
+        x + w - r, y + r, 
+        r, h - r * 2, FALSE);
+    cairo_restore(cr);
+}
+
+void draw_radial_round(cairo_t *cr, gint x, gint y, gint r)
+{
+    cairo_pattern_t *radial = cairo_pattern_create_radial(x, y, r, x, y, 0);
+    cairo_pattern_add_color_stop_rgba(radial, 0, 0, 0, 0, 0);
+    cairo_pattern_add_color_stop_rgba(radial, 0.66, 0, 0, 0, 0.2);
+    cairo_pattern_add_color_stop_rgba(radial, 1, 0, 0, 0, 0.33);
+    cairo_arc(cr, x, y, r, 0, 2 * G_PI);
+    cairo_set_source(cr, radial);
+    cairo_fill(cr);
+
+    cairo_pattern_destroy(radial);
+}
+
+void draw_vlinear(cairo_t *cr, gint x, gint y, gint w, gint h, gboolean top_to_buttom)
+{
+    gint r = 0;
+    cairo_save(cr);
+    // Translate y coordinate, otherwise y is too big for LinearGradient cause render bug.
+    cairo_translate(cr, 0, y);
+    cairo_pattern_t *linear = NULL;
+    if(top_to_buttom)
+        linear = cairo_pattern_create_linear(0, 0, 0, h);
+    else
+        linear = cairo_pattern_create_linear(0, h, 0, 0);
+
+    cairo_pattern_add_color_stop_rgba(linear, 0, 0, 0, 0, 0);
+    cairo_pattern_add_color_stop_rgba(linear, 0.66, 0, 0, 0, 0.2);
+    cairo_pattern_add_color_stop_rgba(linear, 1, 0, 0, 0, 0.33);
+        
+    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+    cairo_set_source(cr, linear);
+    draw_round_rectangle(cr, x, 0, w, h, r);
+    cairo_fill(cr);
+    cairo_restore(cr);
+    cairo_pattern_destroy(linear);
+}
+
+void draw_hlinear(cairo_t *cr, gint x, gint y, gint w, gint h, gboolean left_to_right)
+{
+    gint r = 0;
+    cairo_save(cr);
+    // Translate x coordinate, otherwise x is too big for LinearGradient cause render bug.
+    cairo_pattern_t *linear;
+    cairo_translate(cr, x, 0);
+    if(left_to_right)    
+        linear = cairo_pattern_create_linear(0, 0, w, 0);
+    else
+        linear = cairo_pattern_create_linear(w, 0, 0, 0);
+
+    cairo_pattern_add_color_stop_rgba(linear, 0, 0, 0, 0, 0);
+    cairo_pattern_add_color_stop_rgba(linear, 0.66, 0, 0, 0, 0.2);
+    cairo_pattern_add_color_stop_rgba(linear, 1, 0, 0, 0, 0.33);
+
+    cairo_set_operator(cr, CAIRO_OPERATOR_OVER);
+    cairo_set_source(cr, linear);
+    draw_round_rectangle(cr, 0, y, w, h, r);
+    cairo_fill(cr);
+    cairo_restore(cr);
+
+    cairo_pattern_destroy(linear);
+}
+
+void draw_round_rectangle(cairo_t *cr, gint x, gint y, gint width, gint height, gint r)
+{
+    // Adjust coordinate when width and height is negative.
+    if(width < 0)
+    {
+        x = x + width;
+        width = -width;
+    } 
+
+    if(height < 0)
+    {
+        y = y + height;
+        height = -height;
+    }
+    
+    // Top side.
+    cairo_move_to(cr, x + r, y);
+    cairo_line_to(cr, x + width - r, y);
+    // Top-right corner.
+    cairo_arc(cr, x + width - r, y + r, r, G_PI * 3 / 2, G_PI * 2);
+    // Right side.
+    cairo_line_to(cr, x + width, y + height - r);
+    // Bottom-right corner.
+    cairo_arc(cr, x + width - r, y + height - r, r, 0, G_PI / 2);
+    // Bottom side.
+    cairo_line_to(cr, x + r, y + height);
+    
+    // Bottom-left corner.
+    cairo_arc(cr, x + r, y + height - r, r, G_PI / 2, G_PI);
+    
+    // Left side.
+    cairo_line_to(cr, x, y + r);
+    // Top-left corner.
+    cairo_arc(cr, x + r, y + r, r, G_PI, G_PI * 3 / 2);
+
+    // Close path.
+    cairo_close_path(cr);
+}
+
+gboolean on_draw_shadow(GtkWidget *widget, cairo_t *cr, gpointer data)
+{
+    iDouWindow *self = IDOU_WINDOW(data);
+    cr = gdk_cairo_create(gtk_widget_get_window(widget));
+
+    GtkAllocation alloc;
+    gtk_widget_get_allocation(widget, &alloc);
+    draw_window_shadow(cr, alloc.x, alloc.y, alloc.width, alloc.height, self->shadow_radius, self->shadow_padding);
+}
+
+gboolean on_draw(GtkWidget *widget, gpointer data)
+{
+    GtkAllocation alloc;
+    gint x, y, width, height, r;
+    gtk_widget_get_allocation(widget, &alloc);
+    x = alloc.x;
+    y = alloc.y;
+    width = alloc.width;
+    height = alloc.height;
+    r = 5;
+
+    cairo_t *cr = gdk_cairo_create(gtk_widget_get_window(widget));
+
+    cairo_surface_t *surface = cairo_image_surface_create(CAIRO_FORMAT_ARGB32, width, height);
+    cairo_t *cr2 = cairo_create(surface);
+
+    cairo_move_to(cr2, r, 0);
+    cairo_line_to(cr2, width-r, 0);
+
+	cairo_move_to(cr2, width, r);
+	cairo_line_to(cr2, width, height-r);
+
+	cairo_move_to(cr2, width-r, height);
+	cairo_move_to(cr2, r, height);
+
+	cairo_move_to(cr2, 0, height-r);
+	cairo_line_to(cr2, 0, r);
+
+	cairo_arc(cr2, r, r, r, G_PI, 3 * G_PI / 2.0 );
+	cairo_arc(cr2, width-r, r, r, 3 * G_PI /2.0, 2 * G_PI);
+	cairo_arc(cr2, width-r, height-r, r, 0, G_PI / 2);
+	cairo_arc(cr2, r, height-r, r, G_PI / 2, G_PI);
+    cairo_fill(cr2);
+
+    cairo_set_source_rgba(cr, 0, 0, 0, 0);
+    cairo_set_operator(cr, CAIRO_OPERATOR_SOURCE);
+    cairo_paint(cr);
+ 
+    cairo_region_t *region = gdk_cairo_region_create_from_surface(surface);
+    gtk_widget_shape_combine_region(widget, region);
+
+    cairo_destroy(cr2);
+    cairo_destroy(cr);
+    cairo_region_destroy(region);
+    cairo_surface_destroy(surface);
+
+    return FALSE;
 }
 
 static void on_play_event(GtkWidget *widget, gpointer data)
