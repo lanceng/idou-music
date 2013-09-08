@@ -63,9 +63,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 LTLIBRARIES = $(noinst_LTLIBRARIES)
 libgui_la_LIBADD =
-am_libgui_la_OBJECTS = idou_button.lo idou_titlebar.lo \
-	idou_titlebar2.lo idou_theme_dialog.lo idou_combobox.lo \
-	idou_music_manager.lo idou_window.lo
+am_libgui_la_OBJECTS = idou_titlebar.lo idou_theme_dialog.lo \
+	idou_combobox.lo idou_music_manager.lo idou_window.lo
 libgui_la_OBJECTS = $(am_libgui_la_OBJECTS)
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir)
 depcomp = $(SHELL) $(top_srcdir)/depcomp
@@ -221,6 +220,7 @@ AM_CFLAGS = \
 	$(GTK3_CFLAGS) \
 	$(GST_CFLAGS) \
 	-I../tools \
+	-I../itk \
 	-std=c99 \
 	$(NULL)
 
@@ -228,17 +228,16 @@ AM_LDFLAGS = \
 	$(GTK3_LIBS) \
 	$(GST_LIBS) \
 	../tools/libtools.la \
+	../itk/libitk.la \
 	$(NULL)
 
 libgui_la_SOURCES = \
-		idou_button.c \
-		idou_titlebar.c \
-		idou_titlebar2.c \
-		idou_theme_dialog.c \
-		idou_combobox.c \
-		idou_music_manager.c \
-		idou_window.c \
-		$(NULL)
+	idou_titlebar.c \
+	idou_theme_dialog.c \
+	idou_combobox.c \
+	idou_music_manager.c \
+	idou_window.c \
+	$(NULL)
 
 all: all-am
 
@@ -292,12 +291,10 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idou_button.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idou_combobox.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idou_music_manager.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idou_theme_dialog.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idou_titlebar.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idou_titlebar2.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/idou_window.Plo@am__quote@
 
 .c.o:

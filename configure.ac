@@ -38,6 +38,7 @@ AC_CONFIG_FILES([Makefile
                  resource/image/combobox/Makefile
                  src/Makefile
                  src/tools/Makefile
+                 src/itk/Makefile
                  src/app/Makefile
                  src/gui/Makefile])
 AC_OUTPUT

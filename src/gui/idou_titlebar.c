@@ -1,104 +1,61 @@
+#include <gtk/gtk.h>
+#include "itk_button.h"
 #include "idou_titlebar.h"
-#include "idou_button.h"
+#include "idou_theme_dialog.h"
 
-enum {
-	IDOU_TITLEBAR_DESTROY_SIGNAL,
-	IDOU_TITLEBAR_SIGNAL_N
-};
+G_DEFINE_TYPE(iDouTitlebar, idou_titlebar, ITK_TYPE_TITLEBAR);
 
-static gint idou_titlebar_signals[IDOU_TITLEBAR_SIGNAL_N] = {0};
-static void idou_titlebar_class_init(iDouTitlebarClass *titlebar_class);
-static void idou_titlebar_init(iDouTitlebar *titlebar);
-static void on_close_button_clicked(GtkWidget *widget);
-static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpointer data);
 
-G_DEFINE_TYPE(iDouTitlebar, idou_titlebar, GTK_TYPE_EVENT_BOX);
+static void on_skin_button_clicked(GtkWidget *widget, gpointer data);
 
-static void idou_titlebar_class_init(iDouTitlebarClass *titlebar_class)
+static void idou_titlebar_class_init(iDouTitlebarClass *cls)
 {
-	GtkWidgetClass *object_class;
-	object_class = (GtkWidgetClass*)titlebar_class;
-	idou_titlebar_signals[IDOU_TITLEBAR_DESTROY_SIGNAL] =
-					g_signal_new("idou-destroy",
-					G_TYPE_FROM_CLASS(object_class),
-					G_SIGNAL_RUN_FIRST,
-					0,
-					NULL, NULL,
-					g_cclosure_marshal_VOID__VOID,
-					G_TYPE_NONE, 0);
+
 }
 
-static void idou_titlebar_init(iDouTitlebar *titlebar)
+static void idou_titlebar_init(iDouTitlebar *self)
 {
-    GtkWidget *hbox;
-	GdkPixbuf *pixbuf;
+    GList *list = gtk_container_get_children(GTK_CONTAINER(self));
+    GtkWidget *hbox = GTK_WIDGET(list->data);
 
-    gtk_event_box_set_visible_window(GTK_EVENT_BOX(titlebar), FALSE);
-    hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0);
-	titlebar->label = gtk_label_new (NULL);
-
-    IDOU_BUTTON_SET(titlebar->min_btn,
-                    RESDIR"image/button/min_normal.png",
-                    RESDIR"image/button/min_hover.png",
-                    RESDIR"image/button/min_press.png",
+    GtkWidget *icon_btn;
+    ITK_BUTTON_SET(icon_btn,
+                    RESDIR"image/icon/icon.png",
+                    NULL, 
+                    NULL, 
+                    65, 30);
+    ITK_BUTTON_SET(self->skin_btn,
+                    RESDIR"image/button/theme_normal.png",
+                    RESDIR"image/button/theme_hover.png",
+                    RESDIR"image/button/theme_press.png",
                     25, 18);
-    IDOU_BUTTON_SET(titlebar->max_btn,
-                    RESDIR"image/button/max_normal.png",
-                    RESDIR"image/button/max_hover.png",
-                    RESDIR"image/button/max_press.png",
-                    25, 18);
-    IDOU_BUTTON_SET(titlebar->close_btn, 
-                    RESDIR"image/button/close_normal.png", 
-                    RESDIR"image/button/close_press.png", 
-                    RESDIR"image/button/close_press.png", 
-                    38, 18);
+    gtk_box_pack_start(GTK_BOX(hbox), icon_btn, FALSE, FALSE, 2);
+    gtk_box_pack_end(GTK_BOX(hbox), self->skin_btn, FALSE, FALSE, 0);
 
-	g_signal_connect_swapped(G_OBJECT(titlebar->close_btn), "clicked",
-			 G_CALLBACK(on_close_button_clicked), titlebar);
-    g_signal_connect(G_OBJECT(titlebar), "button-press-event", G_CALLBACK(on_button_press), NULL);
-	
-	gtk_box_pack_start(GTK_BOX(hbox), titlebar->label, FALSE, FALSE, 0);
-	gtk_box_pack_end(GTK_BOX(hbox), titlebar->close_btn, FALSE, FALSE, 0);
-	gtk_box_pack_end(GTK_BOX(hbox), titlebar->max_btn, FALSE, FALSE, 0);
-	gtk_box_pack_end(GTK_BOX(hbox), titlebar->min_btn, FALSE, FALSE, 0);
-
-    gtk_container_add(GTK_CONTAINER(titlebar), hbox);
+    g_signal_connect(G_OBJECT(self->skin_btn), "clicked", G_CALLBACK(on_skin_button_clicked), NULL);
 }
 
-GtkWidget *idou_titlebar_new ()
+GtkWidget *idou_titlebar_new()
 {
-	return g_object_new(IDOU_TYPE_TITLEBAR, NULL);
+    g_object_new(IDOU_TYPE_TITLEBAR, NULL);
 }
 
-GtkWidget *idou_titlebar_new_with_label(gchar *label)
+static void on_skin_button_clicked(GtkWidget *widget, gpointer data)
 {
-	GtkWidget *widget = idou_titlebar_new ();
-	idou_titlebar_set_label (widget, label);
-	return widget;
-}
+    GtkAllocation alloc;
+    gint root_x, root_y;
 
-void idou_titlebar_set_label(GtkWidget *widget, gchar *label)
-{
-    iDouTitlebar *titlebar = IDOU_TITLEBAR(widget);
-	gtk_label_set_text (GTK_LABEL(titlebar->label), label);
-}
+    GtkWidget *top_win = gtk_widget_get_toplevel(widget);
+    GdkWindow *window = gtk_widget_get_window(widget);
+    gtk_widget_get_allocation(widget, &alloc);
+    gdk_window_get_root_origin(GDK_WINDOW(window), &root_x, &root_y);
 
-static void on_close_button_clicked(GtkWidget *widget)
-{
-	g_signal_emit((gpointer)widget, idou_titlebar_signals[IDOU_TITLEBAR_DESTROY_SIGNAL], 
-	              0);
-}
+    GtkWidget *dialog = idou_theme_dialog_new();
+    gtk_window_move(GTK_WINDOW(dialog), root_x + alloc.x,
+                    root_y + alloc.y + alloc.height);
+    gtk_window_set_transient_for(GTK_WINDOW(dialog), GTK_WINDOW(top_win));
 
-static gboolean on_button_press(GtkWidget *widget, GdkEventButton *event, gpointer data)
-{
-    if(event->type == GDK_BUTTON_PRESS)
-    {
-        if(event->button == 1)
-        {
-            gtk_window_begin_move_drag(GTK_WINDOW(gtk_widget_get_toplevel(widget)),
-                                       event->button, event->x_root, event->y_root,
-                                       event->time);
-        }
-    }
-    return FALSE;
+    gtk_widget_show_all(dialog);
+    gtk_dialog_run(GTK_DIALOG(dialog));
+    gtk_widget_destroy(dialog);
 }

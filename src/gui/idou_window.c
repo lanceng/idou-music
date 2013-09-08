@@ -1,9 +1,9 @@
 #include <gst/gst.h>
 
 #include "idou_window.h"
-#include "idou_titlebar2.h"
+#include "idou_titlebar.h"
 #include "idou_window.h"
-#include "idou_button.h"
+#include "itk_button.h"
 #include "idou_music_manager.h"
 #include "gstplay.h"
 
@@ -14,10 +14,11 @@ static void on_play_event(GtkWidget *widget, gpointer data);
 static void on_time_scale_change_value(GtkWidget *widget, gpointer data);
 static gboolean timer_cb(gpointer data);
 static gboolean on_draw_shadow(GtkWidget *widget, cairo_t *cr, gpointer data);
-static void draw_round_rectangle(cairo_t *cr, gint x, gint y, gint width, gint height, gint r);
+/*static void draw_round_rectangle(cairo_t *cr, gint x, gint y, gint width, gint height, gint r);*/
 static void draw_radial_round(cairo_t *cr, gint x, gint y, gint r);
 static void draw_hlinear(cairo_t *cr, gint x, gint y, gint w, gint h, gboolean left_to_right);
 static void draw_vlinear(cairo_t *cr, gint x, gint y, gint w, gint h, gboolean top_to_bottom);
+static void draw_rounded_rectangle(cairo_t *cr, gint width, gint height, gint r);
 
 void idou_window_class_init(iDouWindowClass *klass)
 {
@@ -38,10 +39,10 @@ void idou_window_init(iDouWindow *self)
 
     self->shadow_radius = 10;
     self->frame_radius = 3;
-    self->shadow_padding = self->shadow_radius - self->frame_radius;
-    GtkWidget *window_shadow = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
-    gtk_alignment_set_padding(GTK_ALIGNMENT(window_shadow), self->shadow_padding, self->shadow_padding, self->shadow_padding, self->shadow_padding);
-    g_signal_connect(G_OBJECT(window_shadow), "draw", G_CALLBACK(on_draw_shadow), (gpointer)self);
+    //self->shadow_padding = self->shadow_radius - self->frame_radius;
+    //GtkWidget *window_shadow = gtk_alignment_new(0.0, 0.0, 1.0, 1.0);
+    //gtk_alignment_set_padding(GTK_ALIGNMENT(window_shadow), self->shadow_padding, self->shadow_padding, self->shadow_padding, self->shadow_padding);
+    //g_signal_connect(G_OBJECT(window_shadow), "draw", G_CALLBACK(on_draw_shadow), (gpointer)self);
     
     vbox = gtk_box_new(GTK_ORIENTATION_VERTICAL, 2);
     hbox = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
@@ -54,7 +55,7 @@ void idou_window_init(iDouWindow *self)
     hbox4 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
     hbox5 = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 2);
 
-    GtkWidget *title_bar = idou_titlebar2_new();
+    GtkWidget *title_bar = idou_titlebar_new();
     gtk_box_pack_start(GTK_BOX(vbox), title_bar, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox), hbox, TRUE, TRUE, 0);
     gtk_box_pack_start(GTK_BOX(hbox), vbox2, FALSE, FALSE, 2);
@@ -77,20 +78,20 @@ void idou_window_init(iDouWindow *self)
     gtk_box_pack_start(GTK_BOX(hbox4), lyric_toggle, FALSE, FALSE, 0);
 
     GtkWidget *align = gtk_alignment_new(0.3, 0, 0, 0);
-    GtkWidget *last_btn = idou_button_new();
-    IDOU_BUTTON_SET(last_btn,
+    GtkWidget *last_btn = itk_button_new();
+    ITK_BUTTON_SET(last_btn,
                     RESDIR"image/button/last_normal.png",
                     RESDIR"image/button/last_hover.png",
                     RESDIR"image/button/last_press.png",
                     32, 32);
-    GtkWidget *play_btn = idou_button_new();
-    IDOU_BUTTON_SET(play_btn,
+    GtkWidget *play_btn = itk_button_new();
+    ITK_BUTTON_SET(play_btn,
                     RESDIR"image/button/play_normal.png",
                     RESDIR"image/button/play_hover.png",
                     RESDIR"image/button/play_press.png",
                     32, 32);
-    GtkWidget *next_btn = idou_button_new();
-    IDOU_BUTTON_SET(next_btn,
+    GtkWidget *next_btn = itk_button_new();
+    ITK_BUTTON_SET(next_btn,
                     RESDIR"image/button/next_normal.png",
                     RESDIR"image/button/next_hover.png",
                     RESDIR"image/button/next_press.png",
@@ -117,26 +118,26 @@ void idou_window_init(iDouWindow *self)
     GtkWidget *music_manager = idou_music_manager_new();
     gtk_box_pack_start(GTK_BOX(vbox2), music_manager, TRUE, TRUE, 2);
 
-    GtkWidget *order_btn = gtk_button_new();
-    IDOU_BUTTON_SET(order_btn,
+    GtkWidget *order_btn = itk_button_new();
+    ITK_BUTTON_SET(order_btn,
                     RESDIR"image/playmode/order_normal.png",
                     RESDIR"image/playmode/order_hover.png",
                     RESDIR"image/playmode/order_press.png",
                     18, 14);
-    GtkWidget *loop_btn = gtk_button_new();
-    IDOU_BUTTON_SET(loop_btn,
+    GtkWidget *loop_btn = itk_button_new();
+    ITK_BUTTON_SET(loop_btn,
                     RESDIR"image/playmode/loop_normal.png",
                     RESDIR"image/playmode/loop_hover.png",
                     RESDIR"image/playmode/loop_press.png",
                     18, 14);
-    GtkWidget *random_btn = gtk_button_new();
-    IDOU_BUTTON_SET(random_btn,
+    GtkWidget *random_btn = itk_button_new();
+    ITK_BUTTON_SET(random_btn,
                     RESDIR"image/playmode/random_normal.png",
                     RESDIR"image/playmode/random_hover.png",
                     RESDIR"image/playmode/random_press.png",
                     18, 14);
-    GtkWidget *single_btn = gtk_button_new();
-    IDOU_BUTTON_SET(single_btn,
+    GtkWidget *single_btn = itk_button_new();
+    ITK_BUTTON_SET(single_btn,
                     RESDIR"image/playmode/single_normal.png",
                     RESDIR"image/playmode/single_hover.png",
                     RESDIR"image/playmode/single_press.png",
@@ -148,12 +149,9 @@ void idou_window_init(iDouWindow *self)
     gtk_box_pack_start(GTK_BOX(hbox5), single_btn, TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox2), hbox5, FALSE, FALSE, 3);
 
-    GtkWidget *event_box = gtk_event_box_new();
-    gtk_container_add(GTK_CONTAINER(event_box), vbox);
-    gtk_container_add(GTK_CONTAINER(window_shadow), event_box);
-    gtk_container_add(GTK_CONTAINER(window), window_shadow);
+    gtk_container_add(GTK_CONTAINER(window), vbox);
 
-    g_signal_connect(G_OBJECT(title_bar), "idou-destroy", G_CALLBACK(gtk_main_quit), NULL);
+    g_signal_connect(G_OBJECT(title_bar), "itk-destroy", G_CALLBACK(gtk_main_quit), NULL);
     g_signal_connect_after(G_OBJECT(window), "draw", G_CALLBACK(on_draw), NULL);
 
     GtkCssProvider *provider = gtk_css_provider_new();
@@ -182,7 +180,7 @@ void idou_window_show(iDouWindow *window)
 {
     gtk_widget_show_all(GTK_WINDOW(window));
 }
-/*
+
 static gboolean on_draw(GtkWidget *widget, gpointer data)
 {
     cairo_t *cr;
@@ -197,6 +195,7 @@ static gboolean on_draw(GtkWidget *widget, gpointer data)
                                                           width,
                                                           height);
     cairo_t *cr2 = cairo_create(surface);
+    /*draw_rounded_rectangle(cr2, width, height, r);*/
     draw_rounded_rectangle(cr2, width, height, r);
     cairo_stroke_preserve(cr2);
     cairo_fill(cr2) ;
@@ -214,7 +213,6 @@ static gboolean on_draw(GtkWidget *widget, gpointer data)
     cairo_surface_destroy(surface);
     cairo_destroy(cr);
 }
-*/
 
 static void draw_rounded_rectangle(cairo_t *cr, gint width, gint height, gint r)
 {
@@ -404,6 +402,7 @@ gboolean on_draw_shadow(GtkWidget *widget, cairo_t *cr, gpointer data)
     draw_window_shadow(cr, alloc.x, alloc.y, alloc.width, alloc.height, self->shadow_radius, self->shadow_padding);
 }
 
+#if 0
 gboolean on_draw(GtkWidget *widget, gpointer data)
 {
     GtkAllocation alloc;
@@ -452,6 +451,7 @@ gboolean on_draw(GtkWidget *widget, gpointer data)
 
     return FALSE;
 }
+#endif
 
 static void on_play_event(GtkWidget *widget, gpointer data)
 {
