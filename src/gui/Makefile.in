@@ -161,6 +161,8 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
 VERSION = @VERSION@
+WEBKIT_CFLAGS = @WEBKIT_CFLAGS@
+WEBKIT_LIBS = @WEBKIT_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -219,6 +221,7 @@ AM_CFLAGS = \
 	-DRESDIR=\"$(pkgdatadir)/resource/\" \
 	$(GTK3_CFLAGS) \
 	$(GST_CFLAGS) \
+	$(WEBKIT_CFLAGS) \
 	-I../tools \
 	-I../itk \
 	-std=c99 \
@@ -227,6 +230,7 @@ AM_CFLAGS = \
 AM_LDFLAGS = \
 	$(GTK3_LIBS) \
 	$(GST_LIBS) \
+	$(WEBKIT_LIBS) \
 	../tools/libtools.la \
 	../itk/libitk.la \
 	$(NULL)

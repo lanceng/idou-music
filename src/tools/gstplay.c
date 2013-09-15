@@ -10,6 +10,11 @@ typedef struct _GstPlay {
 static GstPlay *gst_play;
 static gboolean bus_call(GstBus *bus, GstMessage *msg, gpointer data);
 
+void gst_play_parse_music(gchar *filename)
+{
+
+}
+
 gpointer gst_play_thread_cb(gpointer *data)
 {
     GMainContext *context;
@@ -95,3 +100,4 @@ static gboolean bus_call(GstBus *bus, GstMessage *msg, gpointer data)
     }
     return TRUE;
 }
+

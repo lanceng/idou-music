@@ -1,4 +1,5 @@
 #include <gst/gst.h>
+#include <webkit/webkit.h>
 
 #include "idou_window.h"
 #include "idou_titlebar.h"
@@ -14,11 +15,11 @@ static void on_play_event(GtkWidget *widget, gpointer data);
 static void on_time_scale_change_value(GtkWidget *widget, gpointer data);
 static gboolean timer_cb(gpointer data);
 static gboolean on_draw_shadow(GtkWidget *widget, cairo_t *cr, gpointer data);
-/*static void draw_round_rectangle(cairo_t *cr, gint x, gint y, gint width, gint height, gint r);*/
+static void draw_round_rectangle(cairo_t *cr, gint x, gint y, gint width, gint height, gint r);
 static void draw_radial_round(cairo_t *cr, gint x, gint y, gint r);
 static void draw_hlinear(cairo_t *cr, gint x, gint y, gint w, gint h, gboolean left_to_right);
 static void draw_vlinear(cairo_t *cr, gint x, gint y, gint w, gint h, gboolean top_to_bottom);
-static void draw_rounded_rectangle(cairo_t *cr, gint width, gint height, gint r);
+/*static void draw_rounded_rectangle(cairo_t *cr, gint width, gint height, gint r);*/
 
 void idou_window_class_init(iDouWindowClass *klass)
 {
@@ -149,6 +150,15 @@ void idou_window_init(iDouWindow *self)
     gtk_box_pack_start(GTK_BOX(hbox5), single_btn, TRUE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(vbox2), hbox5, FALSE, FALSE, 3);
 
+    GtkWidget *scrolled = gtk_scrolled_window_new(NULL, NULL);
+    gtk_scrolled_window_set_policy(GTK_SCROLLED_WINDOW(scrolled), GTK_POLICY_NEVER, GTK_POLICY_AUTOMATIC);
+    WebKitWebView *web_view;
+    web_view = webkit_web_view_new();
+    /*webkit_web_view_load_uri(web_view, "http://www.baidu.com/");*/
+    webkit_web_view_load_uri(web_view, "file://"RESDIR"html/index.html");
+    gtk_container_add(GTK_CONTAINER(scrolled), web_view);
+    gtk_box_pack_start(GTK_BOX(hbox), scrolled, TRUE, TRUE, 0);
+
     gtk_container_add(GTK_CONTAINER(window), vbox);
 
     g_signal_connect(G_OBJECT(title_bar), "itk-destroy", G_CALLBACK(gtk_main_quit), NULL);
@@ -195,8 +205,7 @@ static gboolean on_draw(GtkWidget *widget, gpointer data)
                                                           width,
                                                           height);
     cairo_t *cr2 = cairo_create(surface);
-    /*draw_rounded_rectangle(cr2, width, height, r);*/
-    draw_rounded_rectangle(cr2, width, height, r);
+    draw_round_rectangle(cr2, 0, 0, width, height, r);
     cairo_stroke_preserve(cr2);
     cairo_fill(cr2) ;
     cairo_destroy(cr2);
@@ -206,7 +215,7 @@ static gboolean on_draw(GtkWidget *widget, gpointer data)
 
     cairo_set_line_width(cr, 0.3);
     cairo_set_source_rgb(cr, 0.78, 0.78, 0.78);
-    draw_rounded_rectangle(cr, width, height, r);
+    draw_round_rectangle(cr, 0, 0, width, height, r);
     cairo_stroke(cr);
 
     cairo_region_destroy(region);

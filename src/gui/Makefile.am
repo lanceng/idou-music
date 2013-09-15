@@ -4,6 +4,7 @@ AM_CFLAGS = \
 	-DRESDIR=\"$(pkgdatadir)/resource/\" \
 	$(GTK3_CFLAGS) \
 	$(GST_CFLAGS) \
+	$(WEBKIT_CFLAGS) \
 	-I../tools \
 	-I../itk \
 	-std=c99 \
@@ -12,6 +13,7 @@ AM_CFLAGS = \
 AM_LDFLAGS = \
 	$(GTK3_LIBS) \
 	$(GST_LIBS) \
+	$(WEBKIT_LIBS) \
 	../tools/libtools.la \
 	../itk/libitk.la \
 	$(NULL)

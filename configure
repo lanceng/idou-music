@@ -633,6 +633,8 @@ ac_subst_vars='am__EXEEXT_FALSE
 am__EXEEXT_TRUE
 LTLIBOBJS
 LIBOBJS
+WEBKIT_LIBS
+WEBKIT_CFLAGS
 GST_LIBS
 GST_CFLAGS
 GTK3_LIBS
@@ -786,7 +788,9 @@ PKG_CONFIG_LIBDIR
 GTK3_CFLAGS
 GTK3_LIBS
 GST_CFLAGS
-GST_LIBS'
+GST_LIBS
+WEBKIT_CFLAGS
+WEBKIT_LIBS'
 
 
 # Initialize some variables set by options.
@@ -1443,6 +1447,9 @@ Some influential environment variables:
   GTK3_LIBS   linker flags for GTK3, overriding pkg-config
   GST_CFLAGS  C compiler flags for GST, overriding pkg-config
   GST_LIBS    linker flags for GST, overriding pkg-config
+  WEBKIT_CFLAGS
+              C compiler flags for WEBKIT, overriding pkg-config
+  WEBKIT_LIBS linker flags for WEBKIT, overriding pkg-config
 
 Use these variables to override the choices made by `configure' or to help
 it to find libraries and programs with nonstandard names/locations.
@@ -16207,13 +16214,104 @@ $as_echo "yes" >&6; }
 
 fi
 
+pkg_failed=no
+{ $as_echo "$as_me:${as_lineno-$LINENO}: checking for WEBKIT" >&5
+$as_echo_n "checking for WEBKIT... " >&6; }
+
+if test -n "$WEBKIT_CFLAGS"; then
+    pkg_cv_WEBKIT_CFLAGS="$WEBKIT_CFLAGS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"webkitgtk-3.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "webkitgtk-3.0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_WEBKIT_CFLAGS=`$PKG_CONFIG --cflags "webkitgtk-3.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+if test -n "$WEBKIT_LIBS"; then
+    pkg_cv_WEBKIT_LIBS="$WEBKIT_LIBS"
+ elif test -n "$PKG_CONFIG"; then
+    if test -n "$PKG_CONFIG" && \
+    { { $as_echo "$as_me:${as_lineno-$LINENO}: \$PKG_CONFIG --exists --print-errors \"webkitgtk-3.0\""; } >&5
+  ($PKG_CONFIG --exists --print-errors "webkitgtk-3.0") 2>&5
+  ac_status=$?
+  $as_echo "$as_me:${as_lineno-$LINENO}: \$? = $ac_status" >&5
+  test $ac_status = 0; }; then
+  pkg_cv_WEBKIT_LIBS=`$PKG_CONFIG --libs "webkitgtk-3.0" 2>/dev/null`
+		      test "x$?" != "x0" && pkg_failed=yes
+else
+  pkg_failed=yes
+fi
+ else
+    pkg_failed=untried
+fi
+
+
+
+if test $pkg_failed = yes; then
+   	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+
+if $PKG_CONFIG --atleast-pkgconfig-version 0.20; then
+        _pkg_short_errors_supported=yes
+else
+        _pkg_short_errors_supported=no
+fi
+        if test $_pkg_short_errors_supported = yes; then
+	        WEBKIT_PKG_ERRORS=`$PKG_CONFIG --short-errors --print-errors --cflags --libs "webkitgtk-3.0" 2>&1`
+        else
+	        WEBKIT_PKG_ERRORS=`$PKG_CONFIG --print-errors --cflags --libs "webkitgtk-3.0" 2>&1`
+        fi
+	# Put the nasty error message in config.log where it belongs
+	echo "$WEBKIT_PKG_ERRORS" >&5
+
+	as_fn_error $? "Package requirements (webkitgtk-3.0) were not met:
+
+$WEBKIT_PKG_ERRORS
+
+Consider adjusting the PKG_CONFIG_PATH environment variable if you
+installed software in a non-standard prefix.
+
+Alternatively, you may set the environment variables WEBKIT_CFLAGS
+and WEBKIT_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details." "$LINENO" 5
+elif test $pkg_failed = untried; then
+     	{ $as_echo "$as_me:${as_lineno-$LINENO}: result: no" >&5
+$as_echo "no" >&6; }
+	{ { $as_echo "$as_me:${as_lineno-$LINENO}: error: in \`$ac_pwd':" >&5
+$as_echo "$as_me: error: in \`$ac_pwd':" >&2;}
+as_fn_error $? "The pkg-config script could not be found or is too old.  Make sure it
+is in your PATH or set the PKG_CONFIG environment variable to the full
+path to pkg-config.
+
+Alternatively, you may set the environment variables WEBKIT_CFLAGS
+and WEBKIT_LIBS to avoid the need to call pkg-config.
+See the pkg-config man page for more details.
+
+To get pkg-config, see <http://pkg-config.freedesktop.org/>.
+See \`config.log' for more details" "$LINENO" 5; }
+else
+	WEBKIT_CFLAGS=$pkg_cv_WEBKIT_CFLAGS
+	WEBKIT_LIBS=$pkg_cv_WEBKIT_LIBS
+        { $as_echo "$as_me:${as_lineno-$LINENO}: result: yes" >&5
+$as_echo "yes" >&6; }
+
+fi
+
 # Checks for header files.
 
 # Checks for typedefs, structures, and compiler characteristics.
 
 # Checks for library functions.
 
-ac_config_files="$ac_config_files Makefile resource/Makefile resource/image/Makefile resource/image/button/Makefile resource/image/skin/Makefile resource/image/icon/Makefile resource/image/playmode/Makefile resource/image/combobox/Makefile src/Makefile src/tools/Makefile src/itk/Makefile src/app/Makefile src/gui/Makefile"
+ac_config_files="$ac_config_files Makefile resource/Makefile resource/image/Makefile resource/image/button/Makefile resource/image/skin/Makefile resource/image/icon/Makefile resource/image/playmode/Makefile resource/image/combobox/Makefile resource/html/Makefile resource/html/js/Makefile resource/html/css/Makefile src/Makefile src/tools/Makefile src/itk/Makefile src/app/Makefile src/gui/Makefile"
 
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
@@ -17326,6 +17424,9 @@ do
     "resource/image/icon/Makefile") CONFIG_FILES="$CONFIG_FILES resource/image/icon/Makefile" ;;
     "resource/image/playmode/Makefile") CONFIG_FILES="$CONFIG_FILES resource/image/playmode/Makefile" ;;
     "resource/image/combobox/Makefile") CONFIG_FILES="$CONFIG_FILES resource/image/combobox/Makefile" ;;
+    "resource/html/Makefile") CONFIG_FILES="$CONFIG_FILES resource/html/Makefile" ;;
+    "resource/html/js/Makefile") CONFIG_FILES="$CONFIG_FILES resource/html/js/Makefile" ;;
+    "resource/html/css/Makefile") CONFIG_FILES="$CONFIG_FILES resource/html/css/Makefile" ;;
     "src/Makefile") CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
     "src/tools/Makefile") CONFIG_FILES="$CONFIG_FILES src/tools/Makefile" ;;
     "src/itk/Makefile") CONFIG_FILES="$CONFIG_FILES src/itk/Makefile" ;;

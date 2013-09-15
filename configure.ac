@@ -21,6 +21,7 @@ AC_PROG_RANLIB
 # Checks for libraries.
 PKG_CHECK_MODULES([GTK3], [gtk+-3.0])
 PKG_CHECK_MODULES([GST], [gstreamer-0.10])
+PKG_CHECK_MODULES([WEBKIT], [webkitgtk-3.0])
 
 # Checks for header files.
 
@@ -36,6 +37,9 @@ AC_CONFIG_FILES([Makefile
                  resource/image/icon/Makefile
                  resource/image/playmode/Makefile
                  resource/image/combobox/Makefile
+                 resource/html/Makefile
+                 resource/html/js/Makefile
+                 resource/html/css/Makefile
                  src/Makefile
                  src/tools/Makefile
                  src/itk/Makefile
